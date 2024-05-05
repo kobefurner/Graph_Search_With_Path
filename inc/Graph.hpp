@@ -2,6 +2,9 @@
 #define GRAPH_H
 #include <iostream>
 #include <deque>
+#include <vector>
+#include <map>
+#include "GameState.h"
 
 using std::endl;
 using std::cout;
@@ -18,7 +21,11 @@ template <typename T>
 class Graph{
 friend ostream& operator << <>(ostream& out, const Graph<T>& g);
 private:
+  std::vector<std::vector<T>> adjList;
+  std::map<T, int> vertexToIndex;
+  int numVertices;
   // Declare any variables needed for your graph
+
 public:
   Graph();
   Graph(int);
@@ -39,8 +46,9 @@ public:
 * 
 *********************************************/
 template<typename T>
-Graph<T>::Graph(){
-
+Graph<T>::Graph() {
+  adjList.resize(100);
+  numVertices = 0;
 }
 
 /*********************************************
@@ -49,17 +57,20 @@ Graph<T>::Graph(){
 *********************************************/
 template<typename T>
 Graph<T>::Graph(int maxVerticies){
-
+  adjList.resize(maxVerticies);
+  numVertices = 0;
 }
 
 
 /*********************************************
-* Adds a Vertex to the GraphIf number of verticies is less than the 
+* Adds a Vertex to the Graph If number of verticies is less than the 
 * Max Possible number of verticies.  
 *********************************************/
 template <typename T>
 void Graph<T>::addVertex(const T& vertex){
-
+  if (!vertexExists(vertex)){
+    vertexToIndex[vertex] = numVertices++;
+  }
 }
 
 /*********************************************
@@ -68,7 +79,7 @@ void Graph<T>::addVertex(const T& vertex){
 *********************************************/
 template<typename T>
 int Graph<T>::getNumVertices() const {
-  return 0;
+  return numVertices;
 }
 
 /*********************************************
@@ -77,6 +88,9 @@ int Graph<T>::getNumVertices() const {
 *********************************************/
 template <typename T>
 int Graph<T>::findVertexPos(const T& item) const {
+  if (vertexExists(item)){
+    return vertexToIndex.at(item);
+  }
   return -1; //return negative one
 }
 
@@ -86,7 +100,7 @@ int Graph<T>::findVertexPos(const T& item) const {
 *********************************************/
 template <typename T>
 bool Graph<T>::vertexExists(const T& item) const {
-  return false;
+  return vertexToIndex.find(item) != vertexToIndex.end();
 } 
 
 
@@ -95,7 +109,10 @@ bool Graph<T>::vertexExists(const T& item) const {
 * 
 *********************************************/
 template <typename T>
-void Graph<T>::addEdge(const T& source, const T& target){
+void Graph<T>::addEdge(const T& source, const T& target) {
+    if (vertexExists(source) && vertexExists(target)) {
+        adjList[vertexToIndex[source]].push_back(target);
+    }
 }
 
 /*
@@ -121,8 +138,37 @@ getPath('a', 'f') should return
 
 template <typename T>
 void Graph<T>::getPath(std::deque<T>& solution, const T& source, const T& target) {
-  // Load the answer into the solution deque
- 
+    if (!vertexExists(source) || !vertexExists(target)) {
+        return;
+    }
+
+    std::map<T, T> parent;
+
+    std::deque<T> queue;
+    queue.push_back(source);
+
+    while (!queue.empty()) {
+        T current = queue.front();
+        queue.pop_front();
+
+        if (current == target) {
+            T temp = target;
+            while (!(temp == source)) {
+                solution.push_front(temp);
+                temp = parent[temp];
+            }
+            solution.push_front(source);
+            return;
+        }
+
+        int index = vertexToIndex[current];
+        for (const T& neighbor : adjList[index]) {
+            if (parent.find(neighbor) == parent.end()) {
+                parent[neighbor] = current;
+                queue.push_back(neighbor);
+            }
+        }
+    }
 }
 
 /*********************************************
@@ -143,7 +189,14 @@ Your display will look something like the following
 *********************************************/
 template <typename T>
 ostream& operator << (ostream& out, const Graph<T>& g) {
-  return out;
+  for (const auto& pair : g.vertexToIndex) {
+        out << pair.first << ": ";
+        for (const T& neighbor : g.adjList[pair.second]) {
+            out << neighbor << " ";
+        }
+        out << "\n";
+    }
+    return out;
 }
 
 #endif

@@ -12,7 +12,7 @@ using std::string;
 // Set up some forward declares
 class GameState;
 namespace std {
-  template<>
+  template<> 
   struct hash<GameState> {
   public:
     size_t operator()(const GameState& obj) const; 

@@ -58,7 +58,7 @@ bool testWithNumbers(){
 
     char possPath1[] = {'a', 'b', 'e', 'f'};
     char possPath2[] = {'a', 'd', 'g', 'f'};
-
+ 
     bool isPath = true;
     for(int i = 0; i < solution.size(); i++){
       if(solution[i] != possPath1[i] && solution[i] != possPath2[i]){
